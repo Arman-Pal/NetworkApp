@@ -33,7 +33,30 @@ const Sidebar = () => {
     },
   });
 
-  const {data:authUser} = useQuery({queryKey: ["authUser"]})
+  const {data:authUser, isLoading} = useQuery({queryKey: ["authUser"],
+    queryFn: async() => {
+			try {
+				const res = await fetch("/api/auth/me");
+				const data = await res.json();
+				if(data.error) return null;
+				if(!res.ok){
+					throw new Error(data.error || "Something went wrong")
+				}
+				console.log("authUser is here:",data);
+				return data;
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		retry: false,
+  });
+  if(isLoading) {
+		return (
+			<div className="h-screen flex justify-center items-center">
+				<LoadingSpinner size="lg"/>
+			</div>
+		)
+	}
   return (
     <div className="md:flex-[2_2_0] w-50 max-w-40">
       <div className="sticky top-0 left-0 h-screen flex flex-col border-r border-gray-700 w-20 md:w-full">
